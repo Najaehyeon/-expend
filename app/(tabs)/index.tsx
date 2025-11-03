@@ -1,6 +1,7 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StyleSheet, Text, View } from "react-native";
+import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Home() {
@@ -8,6 +9,7 @@ export default function Home() {
 
     return (
         <View style={{flex: 1, marginTop: insets.top}}>
+            <StatusBar barStyle={'dark-content'} />
             <View style={styles.header}>
                 <Feather name="chevron-left" size={28} color="black" />
                 <Text style={styles.headerText}>2025 11월</Text>
@@ -20,15 +22,16 @@ export default function Home() {
                         <FontAwesome5 name="pen" size={14} color="black" />
                     </View>
                     <Text style={styles.aimExpend}>1,500,000</Text>
+                    <Text style={styles.aimAverageExpend}>하루 50,000원 이하 권장</Text>
                 </View>
                 <View style={styles.cylinderContainer}>
-                    <View style={{flex:6, width: "100%", alignItems: "center"}}>
+                    <View style={{flex:3, width: "100%", alignItems: "center"}}>
                         <View style={styles.cylinder}></View>
                         <View style={styles.aimExpendCylinder}>
                             <Text style={{
                                 fontSize: 12,
                                 top: -26,
-                                left: -108,
+                                left: -104,
                                 fontWeight: "600",
                                 textAlign: "center",
                             }}>11/18{'\n'}적정지출{'\n'}900,000</Text>
@@ -37,14 +40,32 @@ export default function Home() {
                             <Text style={{
                                 fontSize: 12,
                                 top: -15,
-                                left: 108,
+                                left: 104,
                                 fontWeight: "600",
                                 textAlign: "center",
-                                color: "#FF7F00"
+                                color: "#0000bb"
                             }}>현재 지출{'\n'}820,700</Text>
                         </View>
                     </View>
-                    <View style={{flex:1}}></View>
+                    <View style={{
+                        flex:1,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        bottom: 8,
+                    }}>
+                        <Text style={{
+                            fontSize: 14, color: "#0000bb"
+                        }}>오늘 지출</Text>
+                        <Text style={{
+                            fontSize: 32, fontWeight: "bold", color: "#0000bb"
+                        }}>23,710</Text>
+                    </View>
+                    <TouchableOpacity
+                        style={styles.floatingActionButton}
+                        activeOpacity={0.6}
+                    >
+                        <AntDesign name="plus" size={28} color="white" />
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>
@@ -70,6 +91,7 @@ const styles = StyleSheet.create({
     aimContainer: {
         flex: 1,
         justifyContent: "center",
+        alignItems: "center",
     },
     aimTitleContainer: {
         flexDirection: "row",
@@ -85,13 +107,16 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: "bold",
     },
+    aimAverageExpend: {
+        fontSize: 12,
+    },
     cylinderContainer: {
-        flex: 3,
+        flex: 4,
         width: "100%",
     },
     cylinder: {
         position: "absolute",
-        width: "42%",
+        width: "40%",
         height: "100%",
         borderBottomLeftRadius: 50,
         borderBottomRightRadius: 50,
@@ -101,20 +126,31 @@ const styles = StyleSheet.create({
     expendCylinder: {
         position: "absolute",
         bottom: 0,
-        width: "42%",
+        width: "40%",
         height: "60%",
         borderBottomLeftRadius: 50,
         borderBottomRightRadius: 50,
-        backgroundColor: "#FF7F00",
+        backgroundColor: "#0000bb",
     },
     aimExpendCylinder: {
         position: "absolute",
         bottom: 0,
-        width: "42%",
+        width: "40%",
         height: "64%",
         borderBottomLeftRadius: 50,
         borderBottomRightRadius: 50,
         backgroundColor: "white",
         borderTopWidth: 1,
+    },
+    floatingActionButton: {
+        justifyContent: "center",
+        alignItems: "center",
+        position: "absolute",
+        bottom: 20,
+        right: 20,
+        width: 56,
+        height: 56,
+        borderRadius: 50,
+        backgroundColor: "black",
     }
 })
