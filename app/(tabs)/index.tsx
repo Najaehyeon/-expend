@@ -16,13 +16,10 @@ export default function Home() {
                 <Feather name="chevron-right" size={28} color="black" />
             </View>
             <View style={styles.content}>
-                <View style={styles.aimContainer}>
-                    <View style={styles.aimTitleContainer}>
-                        <Text style={styles.aimTitle}>목표 지출</Text>
-                        <FontAwesome5 name="pen" size={14} color="black" />
-                    </View>
-                    <Text style={styles.aimExpend}>1,500,000</Text>
-                    <Text style={styles.aimAverageExpend}>하루 50,000원 이하 권장</Text>
+                <View style={styles.todayContainer}>
+                    <Text style={styles.todayTitle}>오늘 지출</Text>
+                    <Text style={styles.todayExpend}>23,710</Text>
+                    <Text style={styles.todayAverageExpend}>하루 50,000원 이하 권장</Text>
                 </View>
                 <View style={styles.cylinderContainer}>
                     <View style={{flex:3, width: "100%", alignItems: "center"}}>
@@ -47,18 +44,17 @@ export default function Home() {
                             }}>현재 지출{'\n'}820,700</Text>
                         </View>
                     </View>
-                    <View style={{
-                        flex:1,
-                        justifyContent: "center",
-                        alignItems: "center",
-                        bottom: 8,
-                    }}>
+                    <View style={styles.aimContainer}>
+                        <View style={styles.aimTitleContainer}>
+                            <Text style={{
+                                fontSize: 14, 
+                                marginHorizontal: 6,
+                            }}>목표 최대 지출</Text>
+                            <FontAwesome5 name="pen" size={14} />
+                        </View>
                         <Text style={{
-                            fontSize: 14, color: "#0000bb"
-                        }}>오늘 지출</Text>
-                        <Text style={{
-                            fontSize: 32, fontWeight: "bold", color: "#0000bb"
-                        }}>23,710</Text>
+                            fontSize: 32, fontWeight: "bold"
+                        }}>1,500,000</Text>
                     </View>
                     <TouchableOpacity
                         style={styles.floatingActionButton}
@@ -88,27 +84,24 @@ const styles = StyleSheet.create({
         flex: 1,
         alignItems: "center",
     },
-    aimContainer: {
+    todayContainer: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
     },
-    aimTitleContainer: {
-        flexDirection: "row",
-        justifyContent: "center",
-        alignItems: "center",
-    },
-    aimTitle: {
+    todayTitle: {
         fontSize: 16,
         fontWeight: "600",
-        marginHorizontal: 6,
+        color: "#0000bb",
     },
-    aimExpend: {
-        fontSize: 28,
+    todayExpend: {
+        fontSize: 32,
+        color: "#0000bb",
         fontWeight: "bold",
     },
-    aimAverageExpend: {
+    todayAverageExpend: {
         fontSize: 12,
+        color: "#0000bb",
     },
     cylinderContainer: {
         flex: 4,
@@ -141,6 +134,17 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 50,
         backgroundColor: "white",
         borderTopWidth: 1,
+    },
+    aimContainer: {
+        flex:1,
+        justifyContent: "center",
+        alignItems: "center",
+        bottom: 8,
+    },
+    aimTitleContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
     },
     floatingActionButton: {
         justifyContent: "center",
