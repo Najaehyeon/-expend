@@ -1,19 +1,65 @@
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
-import { StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
+import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Home() {
     const insets = useSafeAreaInsets();
 
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+
+    const [aimMoney, setAimMoney] = useState(0);
+    const [isAimWriting, setIsAimWriting] = useState(false);
+    const [aimMoneyWriting, setAimMoneyWriting] = useState('');
+
+    useEffect(() => {
+        const getData = async () => {
+            try {
+                const jsonValue = await AsyncStorage.getItem('my-aim');
+                return jsonValue != null ? setAimMoney(JSON.parse(jsonValue)) : null;
+            } catch (e) {
+                console.log(e);
+            }
+        };
+
+        getData();
+    }, [isAimWriting]);
+
+    const storeAim = async (value) => {
+        try {
+            if (value === 0 || value === null) {
+                return;
+            }
+            const jsonValue = JSON.stringify(value);
+            await AsyncStorage.setItem('my-aim', jsonValue);
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     return (
         <View style={{flex: 1, marginTop: insets.top}}>
             <StatusBar barStyle={'dark-content'} />
             <View style={styles.header}>
-                <Feather name="chevron-left" size={28} color="black" />
-                <Text style={styles.headerText}>2025 11월</Text>
-                <Feather name="chevron-right" size={28} color="black" />
+                <View style={styles.headerMonth}>
+                    <TouchableOpacity>
+                        <Feather name="chevron-left" size={28} color="black" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerText}>{year} {month}월</Text>
+                    <TouchableOpacity>
+                        <Feather name="chevron-right" size={28} color="black" />
+                    </TouchableOpacity>
+                </View>
+                <TouchableOpacity
+                    style={styles.weekAnalysis}
+                >
+                   <Feather name="activity" size={24} color="black" />
+                </TouchableOpacity>
             </View>
             <View style={styles.content}>
                 <View style={styles.todayContainer}>
@@ -49,12 +95,16 @@ export default function Home() {
                             <Text style={{
                                 fontSize: 14, 
                                 marginHorizontal: 6,
-                            }}>목표 최대 지출</Text>
-                            <FontAwesome5 name="pen" size={14} />
+                            }}>월 최대 목표 지출</Text>
+                            <TouchableOpacity
+                                onPress={() => setIsAimWriting(true)}
+                            >
+                                <FontAwesome5 name="pen" size={14} />
+                            </TouchableOpacity>
                         </View>
                         <Text style={{
                             fontSize: 32, fontWeight: "bold"
-                        }}>1,500,000</Text>
+                        }}>{aimMoney.toLocaleString("ko-KR")}</Text>
                     </View>
                     <TouchableOpacity
                         style={styles.floatingActionButton}
@@ -64,6 +114,51 @@ export default function Home() {
                     </TouchableOpacity>
                 </View>
             </View>
+            {isAimWriting
+                ? (
+                    <View style={styles.aimWritingContainer}>
+                        <View style={styles.aimWringTitleContainer}>
+                            <Text style={styles.aimWringTitle}>월 최대 목표 지출</Text>
+                        </View>
+                        <View style={styles.aimWritingInputContainer}>
+                            <TextInput
+                                style={styles.aimWritingInput}
+                                placeholder='목표 지출을 입력하세요.'
+                                keyboardType='numeric'
+                                onChangeText={(text)=> {
+                                    setAimMoneyWriting(text);
+                                }}
+                                value={aimMoneyWriting}
+                            />
+                        </View>
+                        <View style={styles.aimWritingButtons}>
+                            <TouchableOpacity
+                                style={styles.aimWritingCancelButton}
+                                onPress={() => {
+                                    setAimMoneyWriting('')
+                                    setIsAimWriting(false)
+                                }}
+                            >
+                                <Text>취소</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.aimWritingConfirmButton}
+                                onPress={() => {
+                                    const aimValue = parseInt(aimMoneyWriting, 10)
+                                    storeAim(aimValue);
+                                    setAimMoneyWriting('')
+                                    setIsAimWriting(false)
+                                }}
+                            >
+                                <Text style={{color: "white"}}>저장</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                )
+                : (
+                    null
+                )
+            }
         </View>
     )
 }
@@ -72,13 +167,26 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: "row",
         marginTop: 20,
-        marginLeft: 12,
+        marginHorizontal: 12,
+        alignItems: 'flex-start',
+        justifyContent: "space-between",
+    },
+    headerMonth: {
+        flexDirection: "row",
         alignItems: 'center',
     },
     headerText: {
         fontSize: 24,
         fontWeight: "bold",
         marginHorizontal: 8,
+    },
+    weekAnalysis: {
+        width: 48,
+        height: 48,
+        borderRadius: 50,
+        backgroundColor: "white",
+        justifyContent: "center",
+        alignItems: "center",
     },
     content: {
         flex: 1,
@@ -156,5 +264,64 @@ const styles = StyleSheet.create({
         height: 56,
         borderRadius: 50,
         backgroundColor: "black",
+    },
+    aimWritingContainer: {
+        position: "absolute",
+        bottom: "48%",
+        left: "10%",
+        width: "80%",
+        height: "30%",
+        backgroundColor: "white",
+        borderRadius: 20,
+        alignItems: "center",
+        elevation: 10,
+    },
+    aimWringTitleContainer: {
+        flex: 4,
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+    },
+    aimWringTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+        justifyContent: "center",
+    },
+    aimWritingInputContainer: {
+        flex: 3,
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+    },
+    aimWritingInput: {
+        backgroundColor: "#f5f5f7",
+        width: "80%",
+        height: "90%",
+        borderRadius: 10,
+        textAlign: "center",
+    },
+    aimWritingButtons: {
+        flex: 5,
+        width: "100%",
+        flexDirection: "row",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    aimWritingCancelButton: {
+        backgroundColor: "#f5f5f7",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "60%",
+        width: "38%",
+        borderRadius: 10,
+        marginRight: "4%",
+    },
+    aimWritingConfirmButton: {
+        backgroundColor: "black",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "60%",
+        width: "38%",
+        borderRadius: 10,
     }
 })
