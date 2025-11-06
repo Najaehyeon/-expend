@@ -1,11 +1,13 @@
-import { StatusBar, Text } from "react-native"
-import { SafeAreaView } from "react-native-safe-area-context"
+import { StatusBar, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Detail() {
+    const insets = useSafeAreaInsets();
+
     return (
-        <SafeAreaView style={{flex: 1}}>
+        <View style={{flex: 1, marginTop: insets.top}}>
             <StatusBar barStyle={'dark-content'} />
-            <Text>Detail</Text>
-        </SafeAreaView>
+            <Text>Stats</Text>
+        </View>
     )
 }

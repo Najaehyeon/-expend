@@ -2,33 +2,35 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Home() {
     const insets = useSafeAreaInsets();
+    const router = useRouter();
 
     const date = new Date();
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-
+    
     const [aimMoney, setAimMoney] = useState(0);
     const [isAimWriting, setIsAimWriting] = useState(false);
     const [aimMoneyWriting, setAimMoneyWriting] = useState('');
 
-    useEffect(() => {
-        const getData = async () => {
-            try {
-                const jsonValue = await AsyncStorage.getItem('my-aim');
-                return jsonValue != null ? setAimMoney(JSON.parse(jsonValue)) : null;
-            } catch (e) {
-                console.log(e);
-            }
-        };
+    const getAim = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem('my-aim');
+            setAimMoney(jsonValue != null ? JSON.parse(jsonValue) : null);
+        } catch(e) {
+            setAimMoney(-1);
+        }
+    }
 
-        getData();
-    }, [isAimWriting]);
+    useEffect(()=> {
+        getAim();
+    }, []);
 
     const storeAim = async (value) => {
         try {
@@ -43,7 +45,7 @@ export default function Home() {
     }
 
     return (
-        <View style={{flex: 1, marginTop: insets.top}}>
+        <View style={{flex: 1, paddingTop: insets.top, backgroundColor:"#F5F5F7"}}>
             <StatusBar barStyle={'dark-content'} />
             <View style={styles.header}>
                 <View style={styles.headerMonth}>
@@ -104,11 +106,14 @@ export default function Home() {
                         </View>
                         <Text style={{
                             fontSize: 32, fontWeight: "bold"
-                        }}>{aimMoney.toLocaleString("ko-KR")}</Text>
+                        }}>{aimMoney === null ? '0' : aimMoney.toLocaleString('kr-KR')}</Text>
                     </View>
                     <TouchableOpacity
                         style={styles.floatingActionButton}
                         activeOpacity={0.6}
+                        onPress={() => {
+                            router.navigate('/spendingPost');
+                        }}
                     >
                         <AntDesign name="plus" size={28} color="white" />
                     </TouchableOpacity>
@@ -146,7 +151,8 @@ export default function Home() {
                                 onPress={() => {
                                     const aimValue = parseInt(aimMoneyWriting, 10)
                                     storeAim(aimValue);
-                                    setAimMoneyWriting('')
+                                    setAimMoneyWriting('');
+                                    getAim();
                                     setIsAimWriting(false)
                                 }}
                             >
