@@ -14,22 +14,36 @@ export default function Home() {
     const date = new Date();
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
+    const monthDayCount = new Date(year, month, 0).getDate();
+    let todaySpentMoney = 0;
     
     const [aimMoney, setAimMoney] = useState(0);
     const [isAimWriting, setIsAimWriting] = useState(false);
     const [aimMoneyWriting, setAimMoneyWriting] = useState('');
+    const [monthSpentMoney, setMonthSpentMoney] = useState(0);
 
     const getAim = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem('my-aim');
-            setAimMoney(jsonValue != null ? JSON.parse(jsonValue) : null);
+            setAimMoney(jsonValue !== null ? JSON.parse(jsonValue) : null);
         } catch(e) {
             setAimMoney(-1);
         }
     }
 
+    const getTodaySpentMoney = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-${date.getDate()}`);
+            todaySpentMoney = jsonValue !== null ? JSON.parse(jsonValue) : 0;
+        }
+        catch(e) {
+            todaySpentMoney = 0;
+        }
+    }
+
     useEffect(()=> {
         getAim();
+        getTodaySpentMoney();
     }, []);
 
     const storeAim = async (value) => {
@@ -66,8 +80,8 @@ export default function Home() {
             <View style={styles.content}>
                 <View style={styles.todayContainer}>
                     <Text style={styles.todayTitle}>오늘 지출</Text>
-                    <Text style={styles.todayExpend}>23,710</Text>
-                    <Text style={styles.todayAverageExpend}>하루 50,000원 이하 권장</Text>
+                    <Text style={styles.todayExpend}>{todaySpentMoney.toLocaleString("kr-KR")}</Text>
+                    <Text style={styles.todayAverageExpend}>하루 {(aimMoney / monthDayCount).toLocaleString("kr-KR", {maximumFractionDigits: 0})}원 이하 권장</Text>
                 </View>
                 <View style={styles.cylinderContainer}>
                     <View style={{flex:3, width: "100%", alignItems: "center"}}>
@@ -283,7 +297,7 @@ const styles = StyleSheet.create({
         elevation: 10,
     },
     aimWringTitleContainer: {
-        flex: 4,
+        flex: 3,
         justifyContent: "center",
         alignItems: "center",
         width: "100%",
@@ -302,12 +316,13 @@ const styles = StyleSheet.create({
     aimWritingInput: {
         backgroundColor: "#f5f5f7",
         width: "80%",
-        height: "90%",
-        borderRadius: 10,
+        height: "80%",
+        borderRadius: 12,
         textAlign: "center",
+        fontSize: 14,
     },
     aimWritingButtons: {
-        flex: 5,
+        flex: 4,
         width: "100%",
         flexDirection: "row",
         justifyContent: "center",
