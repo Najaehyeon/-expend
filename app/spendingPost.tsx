@@ -1,22 +1,76 @@
+import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useNavigation } from 'expo-router';
+import { useState } from 'react';
+import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SpendingPost() {
     const insets = useSafeAreaInsets();
+    const navigation = useNavigation();
+    
+    const [date, setDate] = useState(new Date());
+    const [mode, setMode] = useState('date');
+    const [show, setShow] = useState(false);
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const dayOfWeek = date.getDay();
+    const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+
+    const onChange = (event, selectedDate) => {
+        const currentDate = selectedDate;
+        setShow(false);
+        setDate(currentDate);
+    };
+
+    const showMode = (currentMode) => {
+        setShow(true);
+        setMode(currentMode);
+    };
+
+    const showDatepicker = () => {
+        showMode('date');
+    };
 
     return (
-        <View style={{flex: 1, backgroundColor: "#F5F5F7"}}>
+        <View style={{flex: 1, marginTop: insets.top + 10, backgroundColor: "#F5F5F7"}}>
+            <StatusBar
+                barStyle={'dark-content'}
+            />
             <View style={styles.contentContainer}>
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity
+                        style={styles.headerBackButton}
+                        onPress={() => {
+                            navigation.goBack();
+                        }}
+                    >
+                        <Feather name="arrow-left" size={24} color="black" />
+                    </TouchableOpacity>
+                    <Text style={{fontSize: 20, fontWeight: "600"}}>지출 내역 작성</Text>
+                </View>
                 <View style={styles.dateContainer}>
                     <Text>날짜</Text>
                     <TouchableOpacity
                         style={styles.dateSelectContainer}
                         activeOpacity={0.6}
+                        onPress={showDatepicker}
                     >
-                        <Text>2025-11-18 화</Text>
+                        <Text>{`${year}-${String(month).padStart(2, "0")}-${String(day  ).padStart(2, "0")} ${daysOfWeek[dayOfWeek]}`}</Text>
                         <MaterialIcons name="date-range" size={24} color="#B1B1B1" />
                     </TouchableOpacity>
+                    {show && (
+                        <DateTimePicker
+                            testID="dateTimePicker"
+                            value={date}
+                            mode={mode}
+                            is24Hour={true}
+                            onChange={onChange}
+                        />
+                    )}
                 </View>
                 <View style={styles.categoryContainer}>
                     <Text>카테고리</Text>
@@ -28,10 +82,10 @@ export default function SpendingPost() {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.detailContainer}>
-                    <Text>세부 내용</Text>
+                    <Text>상세 내용</Text>
                     <TextInput
                         style={styles.detailSelectContainer}
-                        placeholder='세부 내용을 입력해주세요.'
+                        placeholder='상세 내용을 입력해주세요.'
                         placeholderTextColor="#b1b1b1"
                         selectionColor={"#000"}
                     />
@@ -52,6 +106,9 @@ export default function SpendingPost() {
                         <Text style={styles.saveButtonText}>저장하기</Text>
                 </TouchableOpacity>
             </View>
+            <View style={styles.categorySelectActiveContainer}>
+
+            </View>
         </View>
     )
 }
@@ -59,6 +116,20 @@ export default function SpendingPost() {
 const styles = StyleSheet.create({
     contentContainer: {
         paddingHorizontal: 24,
+        backgroundColor: "#F5F5F7",
+    },
+    headerContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 12,
+    },
+    headerBackButton: {
+        left: -10,
+        width: 36,
+        height: 36,
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: 100,
     },
     dateContainer: {
         marginBottom: 12,
@@ -125,5 +196,14 @@ const styles = StyleSheet.create({
     },
     saveButtonText: {
         color: "white",
-    }
+        fontSize: 16,
+    },
+    categorySelectActiveContainer: {
+        // backgroundColor: "grey",
+        // opacity: 0.5,
+        // bottom: 0,
+        // position: "absolute",
+        // width: "100%",
+        // height: "100%",
+    },
 })

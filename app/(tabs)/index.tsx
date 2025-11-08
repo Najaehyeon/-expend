@@ -2,14 +2,14 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRouter } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Home() {
     const insets = useSafeAreaInsets();
-    const router = useRouter();
+    const navigation = useNavigation();
 
     const date = new Date();
     const year = date.getFullYear();
@@ -33,7 +33,7 @@ export default function Home() {
 
     const getTodaySpentMoney = async () => {
         try {
-            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-${date.getDate()}`);
+            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-${date.getDate()}-spent-money`);
             todaySpentMoney = jsonValue !== null ? JSON.parse(jsonValue) : 0;
         }
         catch(e) {
@@ -126,7 +126,7 @@ export default function Home() {
                         style={styles.floatingActionButton}
                         activeOpacity={0.6}
                         onPress={() => {
-                            router.navigate('/spendingPost');
+                            navigation.navigate('spendingPost');
                         }}
                     >
                         <AntDesign name="plus" size={28} color="white" />
