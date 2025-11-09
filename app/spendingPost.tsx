@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -13,6 +14,8 @@ export default function SpendingPost() {
     const [date, setDate] = useState(new Date());
     const [mode, setMode] = useState('date');
     const [show, setShow] = useState(false);
+    const [catergorySelectActivated, setCatergorySelectActivated] = useState(false);
+    const [categories, setCategories] = useState(['식비', '자기계발']);
 
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -77,6 +80,7 @@ export default function SpendingPost() {
                     <TouchableOpacity
                         style={styles.categorySelectContainer}
                         activeOpacity={0.6}
+                        onPress={() => {setCatergorySelectActivated(true)}}
                     >
                         <Text style={styles.categorySelectText}>카테고리를 선택해주세요.</Text>
                     </TouchableOpacity>
@@ -106,9 +110,47 @@ export default function SpendingPost() {
                         <Text style={styles.saveButtonText}>저장하기</Text>
                 </TouchableOpacity>
             </View>
-            <View style={styles.categorySelectActiveContainer}>
 
-            </View>
+            {/* 카테고리 선택 창 */}
+            {
+                catergorySelectActivated
+                    ? (
+                        <View style={styles.categorySelectActiveContainer}>
+                            <View style={styles.categorySelectActiveShadow}/>
+                            <View style={styles.categorySelectActiveBox}>
+                                <View style={styles.categorySelectActiveHeader}>
+                                    <Text style={{fontSize: 20, fontWeight: "600"}}>카테고리 선택</Text>
+                                    <TouchableOpacity
+                                        onPress={() => setCatergorySelectActivated(false)}
+                                    >
+                                        <AntDesign name="close" size={24} color="black" />
+                                    </TouchableOpacity>
+                                </View>
+                                <View style={styles.categoryListContainer}>
+                                {
+                                    categories.map((category, index) => (
+                                            <View
+                                                key={index}
+                                                style={styles.categoryItem}
+                                            >
+                                                <Text>{category}</Text>
+                                            </View>
+                                    ))
+                                }
+                                    <TouchableOpacity
+                                        style={styles.categoryItem}
+                                        activeOpacity={0.6}
+                                        onPress={() => setCategories([...categories, '공과금'])}
+                                    >
+                                        <AntDesign name="plus" size={20} color="black" />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
+                    )
+                    : null
+            }
+            
         </View>
     )
 }
@@ -199,11 +241,46 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
     categorySelectActiveContainer: {
-        // backgroundColor: "grey",
-        // opacity: 0.5,
-        // bottom: 0,
-        // position: "absolute",
-        // width: "100%",
-        // height: "100%",
+        position: "absolute",
+        width: "100%",
+        height: "100%"
     },
+    categorySelectActiveShadow: {
+        backgroundColor: "grey",
+        opacity: 0.5,
+        bottom: 0,
+        position: "absolute",
+        width: "100%",
+        height: "120%",
+    },
+    categorySelectActiveBox: {
+        position: "absolute",
+        bottom: 0,
+        backgroundColor: "white",
+        width: "100%",
+        height: "68%",
+        borderTopLeftRadius: 36,
+        borderTopRightRadius: 36,
+    },
+    categorySelectActiveHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        padding: 24,
+    },
+    categoryListContainer: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        justifyContent: 'flex-start',
+        paddingHorizontal: 16,
+    },
+    categoryItem: {
+        width: '28%',
+        height: 50,
+        marginRight: "5%",
+        backgroundColor: '#e0e0e0',
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10,
+    }
 })
