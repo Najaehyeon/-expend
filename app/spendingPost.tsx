@@ -2,10 +2,10 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Calendar } from 'react-native-calendars';
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function SpendingPost() {
@@ -13,14 +13,13 @@ export default function SpendingPost() {
     const navigation = useNavigation();
     
     const [date, setDate] = useState(new Date());
-    const [mode, setMode] = useState('date');
     const [show, setShow] = useState(false);
     const [catergorySelectActivated, setCatergorySelectActivated] = useState(false);
     const [categories, setCategories] = useState([]);
     const [plusCategory, setPlusCategory] = useState(false);
     const [writingPlusCategory, setWritingPlusCategory] = useState('');
     const [isActiveCategoryDelete, setIsActiveCategoryDelete] = useState(false);
-    
+     
     const [selectedCategory, setSelectedCategory] = useState('');
 
     const year = date.getFullYear();
@@ -29,19 +28,14 @@ export default function SpendingPost() {
     const dayOfWeek = date.getDay();
     const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
-    const onChange = (event, selectedDate) => {
-        const currentDate = selectedDate;
+    const datePick = (selectedDate) => {
         setShow(false);
-        setDate(currentDate);
-    };
-
-    const showMode = (currentMode) => {
-        setShow(true);
-        setMode(currentMode);
+        setDate(new Date(selectedDate));
     };
 
     const showDatepicker = () => {
-        showMode('date');
+        if (show) return setShow(false);
+        setShow(true);
     };
 
     const storeCategories = async (plusCategories) => {
@@ -94,12 +88,23 @@ export default function SpendingPost() {
                         <MaterialIcons name="date-range" size={24} color="#B1B1B1" />
                     </TouchableOpacity>
                     {show && (
-                        <DateTimePicker
-                            testID="dateTimePicker"
-                            value={date}
-                            mode={mode}
-                            is24Hour={true}
-                            onChange={onChange}
+                        <Calendar
+                            style={styles.dateSelectCalendar}
+                            current={`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`}
+                            markedDates={{
+                                [`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`]: {selected: true, disableTouchEvent: true, selectedColor: 'black'}
+                            }}
+                            onDayPress={(day) => {
+                                datePick(day.timestamp)
+                            }}
+                            theme={{
+                                backgroundColor: '#ffffff',
+                                calendarBackground: '#ffffff',
+                                textSectionTitleColor: '#b6c1cd',
+                                selectedDayBackgroundColor: '#000',
+                                selectedDayTextColor: '#ffffff',
+                                todayTextColor: '#00adf5',
+                            }}
                         />
                     )}
                 </View>
@@ -300,6 +305,15 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         paddingHorizontal: 16,
+    },
+    dateSelectCalendar: {
+        position: "absolute",
+        zIndex: 1,
+        width: "100%",
+        marginLeft: "0%",
+        elevation: 10,
+        padding: 10,
+        borderRadius: 24,
     },
     categoryContainer: {
         marginBottom: 12,
