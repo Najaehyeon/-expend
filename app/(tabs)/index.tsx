@@ -2,8 +2,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -14,12 +15,14 @@ export default function Home() {
     const date = new Date();
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
+    const day = date.getDate();
     const monthDayCount = new Date(year, month, 0).getDate();
-    let todaySpentMoney = 0;
     
+    const [currentDay, setCurrentDay] = useState(day);
     const [aimMoney, setAimMoney] = useState(0);
     const [isAimWriting, setIsAimWriting] = useState(false);
     const [aimMoneyWriting, setAimMoneyWriting] = useState('');
+    const [todaySpentMoney, setTodaySpentMoney] = useState(0);
     const [monthSpentMoney, setMonthSpentMoney] = useState(0);
 
     const getAim = async () => {
@@ -30,21 +33,6 @@ export default function Home() {
             setAimMoney(-1);
         }
     }
-
-    const getTodaySpentMoney = async () => {
-        try {
-            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-${date.getDate()}-spent-money`);
-            todaySpentMoney = jsonValue !== null ? JSON.parse(jsonValue) : 0;
-        }
-        catch(e) {
-            todaySpentMoney = 0;
-        }
-    }
-
-    useEffect(()=> {
-        getAim();
-        getTodaySpentMoney();
-    }, []);
 
     const storeAim = async (value) => {
         try {
@@ -57,6 +45,48 @@ export default function Home() {
             console.log(e);
         }
     }
+
+    const getTodaySpentMoney = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-expense_details`);
+            const currentData = jsonValue != null ? JSON.parse(jsonValue) : [];
+            const todaySpent = currentData.filter(f => f.date == `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+            console.log(todaySpent)
+            let total_price = 0
+            for (let i = 0; i < todaySpent.length; i++){
+                total_price += parseInt(todaySpent[i].price);
+            }
+            setTodaySpentMoney(total_price);
+        }
+        catch(e) {
+            setTodaySpentMoney(0);
+        }
+    }
+
+    const fetchData = useCallback(() => {
+        getAim();
+        getTodaySpentMoney();
+    }, [year, month, day]);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchData();
+        }, [fetchData])
+    );
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const now = new Date();
+            const newDay = now.getDate();
+            if (newDay !== currentDay) {
+                setCurrentDay(newDay); 
+                getAim();
+                getTodaySpentMoney(); 
+            }
+        }, 60000);
+
+        return () => clearInterval(interval);
+    }, [currentDay]);
 
     return (
         <View style={{flex: 1, paddingTop: insets.top, backgroundColor:"#F5F5F7"}}>

@@ -19,8 +19,13 @@ export default function SpendingPost() {
     const [plusCategory, setPlusCategory] = useState(false);
     const [writingPlusCategory, setWritingPlusCategory] = useState('');
     const [isActiveCategoryDelete, setIsActiveCategoryDelete] = useState(false);
-     
+    
+    const [selectedDate, setSelectedDate] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedDetail, setSelectedDetail] = useState('');
+    const [selectedPrice, setSelectedPrice] = useState('');
+
+    const [expensesOfTheMonthData, setExpensesOfTheMonthData] = useState([]);
 
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -56,9 +61,56 @@ export default function SpendingPost() {
         }
     }
 
+    const storeExpendDetails = async (selectedDate, selectedCategory, selectedDetail, selectedPrice) => {
+        try {
+            const storageKey = `${year}-${month}-expense_details`;
+            const jsonValue = await AsyncStorage.getItem(storageKey);
+            const currentData = jsonValue != null ? JSON.parse(jsonValue) : [];
+            
+            const newExpense = {
+                date: selectedDate,
+                category: selectedCategory,
+                detail: selectedDetail,
+                price: selectedPrice,
+            };
+            const updatedExpenseDetails = [
+                ...currentData,
+                newExpense,
+            ];
+            
+            const updatedJsonValue = JSON.stringify(updatedExpenseDetails);
+            await AsyncStorage.setItem(storageKey, updatedJsonValue);
+            console.log("저장 성공", updatedExpenseDetails);
+            navigation.goBack();
+        } catch(e) {
+            
+        }
+    }
+
+    const getExpendDetails = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-expense_details`);
+            jsonValue != null ? setExpensesOfTheMonthData(JSON.parse(jsonValue)) : null
+        } catch(e) {
+            
+        }
+    }
+
+    const removeValue = async () => {
+        try {
+            await AsyncStorage.removeItem(`${year}-${month}-expense_details`)
+        } catch(e) {
+            // remove error
+        }
+
+        console.log('Removed.');
+    }
+
     useEffect(() => {
         getAllCategories();
-    }, [])
+        getExpendDetails();
+        setSelectedDate(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
+    }, [year, month, day])
 
     return (
         <View style={{flex: 1, marginTop: insets.top + 10, backgroundColor: "#F5F5F7"}}>
@@ -96,6 +148,7 @@ export default function SpendingPost() {
                             }}
                             onDayPress={(day) => {
                                 datePick(day.timestamp)
+                                setSelectedDate(`${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`)
                             }}
                             theme={{
                                 backgroundColor: '#ffffff',
@@ -129,6 +182,8 @@ export default function SpendingPost() {
                         placeholder='상세 내용을 입력해주세요.'
                         placeholderTextColor="#b1b1b1"
                         selectionColor={"#000"}
+                        onChangeText={(text) => setSelectedDetail(text)}
+                        value={selectedDetail}
                     />
                 </View>
                 <View style={styles.priceContainer}>
@@ -138,13 +193,28 @@ export default function SpendingPost() {
                         placeholder='금액을 입력해주세요.'
                         placeholderTextColor="#b1b1b1"
                         keyboardType='numeric'
+                        onChangeText={(price) => setSelectedPrice(price)}
+                        value={selectedPrice}
                     />
                 </View>
                 <TouchableOpacity
                     style={styles.saveButtonContainer}
                     activeOpacity={0.7}
+                    onPress={() => {
+                        storeExpendDetails(selectedDate, selectedCategory, selectedDetail, selectedPrice)
+                    }}
                 >
                         <Text style={styles.saveButtonText}>저장하기</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[styles.saveButtonContainer, {backgroundColor: "#00adf5"}]}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                        removeValue();
+                    }}
+                >
+                        <Text style={styles.saveButtonText}>테스트용 데이터 삭제</Text>
                 </TouchableOpacity>
             </View>
 
@@ -183,9 +253,9 @@ export default function SpendingPost() {
                                                                 style={styles.categoryItemDeleteButton}
                                                                 activeOpacity={0.5}
                                                                 onPress={() => {
-                                                                    setCategories(categories.splice(index, 1))
-                                                                    storeCategories(categories)
-                                                                    getAllCategories()
+                                                                    const updatedCategories = categories.filter((_, i) => i !== index);
+                                                                    setCategories(updatedCategories);
+                                                                    storeCategories(updatedCategories);
                                                                 }}
                                                             >
                                                                 <AntDesign name="close" size={12} color="white" />
