@@ -27,6 +27,8 @@ export default function SpendingPost() {
 
     const [expensesOfTheMonthData, setExpensesOfTheMonthData] = useState([]);
 
+    const [showBlank, setShowBlank] = useState(false);
+
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
@@ -63,6 +65,10 @@ export default function SpendingPost() {
 
     const storeExpendDetails = async (selectedDate, selectedCategory, selectedDetail, selectedPrice) => {
         try {
+            if (selectedCategory === '' || selectedDetail === '' || selectedPrice === '') {
+                setShowBlank(true)
+                return;
+            };
             const storageKey = `${year}-${month}-expense_details`;
             const jsonValue = await AsyncStorage.getItem(storageKey);
             const currentData = jsonValue != null ? JSON.parse(jsonValue) : [];
@@ -80,7 +86,6 @@ export default function SpendingPost() {
             
             const updatedJsonValue = JSON.stringify(updatedExpenseDetails);
             await AsyncStorage.setItem(storageKey, updatedJsonValue);
-            console.log("저장 성공", updatedExpenseDetails);
             navigation.goBack();
         } catch(e) {
             
@@ -102,7 +107,6 @@ export default function SpendingPost() {
         } catch(e) {
             // remove error
         }
-
         console.log('Removed.');
     }
 
@@ -197,6 +201,13 @@ export default function SpendingPost() {
                         value={selectedPrice}
                     />
                 </View>
+                {showBlank ? (
+                        <View>
+                            <Text style={{color: "red"}}>*빈 칸을 모두 작성해주세요.</Text>
+                        </View>
+                    )
+                    : null
+                }
                 <TouchableOpacity
                     style={styles.saveButtonContainer}
                     activeOpacity={0.7}
@@ -340,7 +351,6 @@ export default function SpendingPost() {
                     )
                     : null
             }
-            
         </View>
     )
 }

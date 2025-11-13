@@ -25,12 +25,18 @@ export default function Home() {
     const [todaySpentMoney, setTodaySpentMoney] = useState(0);
     const [monthSpentMoney, setMonthSpentMoney] = useState(0);
 
+    const [aimCylinderHeight, setAimCylinderHeight] = useState(0);
+    const [expendCylinderHeight, setExpendCylinderHeight] = useState(0);
+
     const getAim = async () => {
         try {
             const jsonValue = await AsyncStorage.getItem('my-aim');
-            setAimMoney(jsonValue !== null ? JSON.parse(jsonValue) : null);
+            const aim = jsonValue !== null ? JSON.parse(jsonValue) : 0;
+            setAimMoney(aim);
+            return aim;
         } catch(e) {
-            setAimMoney(-1);
+            setAimMoney(0);
+            return 0;
         }
     }
 
@@ -42,7 +48,7 @@ export default function Home() {
             const jsonValue = JSON.stringify(value);
             await AsyncStorage.setItem('my-aim', jsonValue);
         } catch (e) {
-            console.log(e);
+            return;
         }
     }
 
@@ -51,22 +57,52 @@ export default function Home() {
             const jsonValue = await AsyncStorage.getItem(`${year}-${month}-expense_details`);
             const currentData = jsonValue != null ? JSON.parse(jsonValue) : [];
             const todaySpent = currentData.filter(f => f.date == `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`);
-            console.log(todaySpent)
-            let total_price = 0
+            let today_total_price = 0
             for (let i = 0; i < todaySpent.length; i++){
-                total_price += parseInt(todaySpent[i].price);
+                today_total_price += parseInt(todaySpent[i].price);
             }
-            setTodaySpentMoney(total_price);
+            setTodaySpentMoney(today_total_price);
+            return today_total_price;
         }
         catch(e) {
             setTodaySpentMoney(0);
+            return 0;
         }
     }
 
-    const fetchData = useCallback(() => {
-        getAim();
-        getTodaySpentMoney();
-    }, [year, month, day]);
+    const getMonthSpentMoney = async () => {
+        try {
+            const jsonValue = await AsyncStorage.getItem(`${year}-${month}-expense_details`);
+            const currentData = jsonValue != null ? JSON.parse(jsonValue) : [];
+            const monthSpent = currentData.filter((value) => value.date.includes(`${year}-${String(month).padStart(2, "0")}`));
+            let month_total_price = 0
+            for (let i = 0; i < monthSpent.length; i++){
+                month_total_price += parseInt(monthSpent[i].price);
+            }
+            setMonthSpentMoney(month_total_price);
+            return month_total_price;
+        }
+        catch {
+            setMonthSpentMoney(0);
+            return 0;
+        }
+    }
+
+    const fetchData = useCallback(async () => {
+        const fetchedAimMoney = await getAim();
+        const fetchedMonthSpentMoney = await getMonthSpentMoney();
+        await getTodaySpentMoney();
+
+        let newExpendCylinderHeight = 0;
+        if (fetchedAimMoney > 0) { // aimMoney가 0이 아닐 때만 계산
+            newExpendCylinderHeight = (fetchedMonthSpentMoney / fetchedAimMoney) * 100;
+            if (newExpendCylinderHeight > 100) newExpendCylinderHeight = 100;
+        }
+        setExpendCylinderHeight(newExpendCylinderHeight);
+
+        const newAimCylinderHeight = (day / monthDayCount) * 100;
+        setAimCylinderHeight(newAimCylinderHeight);
+    }, [year, month, day, monthDayCount]);
 
     useFocusEffect(
         useCallback(() => {
@@ -81,6 +117,7 @@ export default function Home() {
             if (newDay !== currentDay) {
                 setCurrentDay(newDay); 
                 getAim();
+                getMonthSpentMoney();
                 getTodaySpentMoney(); 
             }
         }, 60000);
@@ -109,31 +146,77 @@ export default function Home() {
             </View>
             <View style={styles.content}>
                 <View style={styles.todayContainer}>
-                    <Text style={styles.todayTitle}>오늘 지출</Text>
-                    <Text style={styles.todayExpend}>{todaySpentMoney.toLocaleString("kr-KR")}</Text>
-                    <Text style={styles.todayAverageExpend}>하루 {(aimMoney / monthDayCount).toLocaleString("kr-KR", {maximumFractionDigits: 0})}원 이하 권장</Text>
+                    <Text 
+                        style={[
+                            styles.todayTitle,
+                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                            ]}
+                    >
+                        오늘 지출
+                    </Text>
+                    <Text
+                        style={[
+                            styles.todayExpend,
+                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                        ]}
+                    >
+                        {todaySpentMoney.toLocaleString("kr-KR")}
+                    </Text>
+                    <Text
+                        style={[
+                            styles.todayAverageExpend,
+                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                        ]}
+                    >
+                            하루 {(aimMoney / monthDayCount).toLocaleString("kr-KR", {maximumFractionDigits: 0})}원 이하 권장
+                    </Text>
                 </View>
                 <View style={styles.cylinderContainer}>
-                    <View style={{flex:3, width: "100%", alignItems: "center"}}>
-                        <View style={styles.cylinder}></View>
-                        <View style={styles.aimExpendCylinder}>
-                            <Text style={{
-                                fontSize: 12,
-                                top: -26,
-                                left: -104,
-                                fontWeight: "600",
-                                textAlign: "center",
-                            }}>11/18{'\n'}적정지출{'\n'}900,000</Text>
+                    <View style={styles.cylinderWrapper}>
+                        <View style={styles.cylinderBackground}>
+                            <View
+                                style={[
+                                    styles.expendCylinder,
+                                    {
+                                        height: `${expendCylinderHeight}%`,
+                                        backgroundColor: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"
+                                    }
+                                ]}
+                            />
+                            <View
+                                style={[
+                                    styles.aimExpendCylinder,
+                                    {height: `${aimCylinderHeight}%`}
+                                ]}
+                            />
                         </View>
-                        <View style={styles.expendCylinder}>
-                            <Text style={{
-                                fontSize: 12,
-                                top: -15,
-                                left: 104,
-                                fontWeight: "600",
-                                textAlign: "center",
-                                color: "#0000bb"
-                            }}>현재 지출{'\n'}820,700</Text>
+                        <View
+                            style={[
+                                styles.aimLabel,
+                                {bottom: `${aimCylinderHeight}%`}
+                            ]}
+                        >
+                            <Text style={styles.aimLabelText}>
+                                {month}/{day}{'\n'}
+                                적정지출{'\n'}
+                                {Math.floor(aimMoney/monthDayCount*day).toLocaleString("kr-KR")}
+                            </Text>
+                        </View>
+                        <View
+                            style={[
+                                styles.expendLabel,
+                                {bottom: `${expendCylinderHeight}%`}
+                            ]}
+                        >
+                            <Text
+                                style={[
+                                    styles.expendLabelText,
+                                    {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                ]}
+                            >
+                                현재 지출{'\n'}
+                                {monthSpentMoney.toLocaleString("kr-KR")}
+                            </Text>
                         </View>
                     </View>
                     <View style={styles.aimContainer}>
@@ -197,6 +280,7 @@ export default function Home() {
                                     storeAim(aimValue);
                                     setAimMoneyWriting('');
                                     getAim();
+                                    fetchData();
                                     setIsAimWriting(false)
                                 }}
                             >
@@ -250,22 +334,24 @@ const styles = StyleSheet.create({
     todayTitle: {
         fontSize: 16,
         fontWeight: "600",
-        color: "#0000bb",
     },
     todayExpend: {
         fontSize: 32,
-        color: "#0000bb",
         fontWeight: "bold",
     },
     todayAverageExpend: {
         fontSize: 12,
-        color: "#0000bb",
     },
     cylinderContainer: {
         flex: 4,
         width: "100%",
     },
-    cylinder: {
+    cylinderWrapper: {
+        flex: 3, 
+        width: "100%", 
+        alignItems: "center",
+    },
+    cylinderBackground: {
         position: "absolute",
         width: "40%",
         height: "100%",
@@ -273,25 +359,45 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 50,
         backgroundColor: "white",
         bottom: 0,
+        overflow: 'hidden',
     },
     expendCylinder: {
         position: "absolute",
         bottom: 0,
-        width: "40%",
-        height: "60%",
+        width: "100%",
         borderBottomLeftRadius: 50,
         borderBottomRightRadius: 50,
-        backgroundColor: "#0000bb",
     },
     aimExpendCylinder: {
         position: "absolute",
         bottom: 0,
-        width: "40%",
-        height: "64%",
+        width: "100%",
         borderBottomLeftRadius: 50,
         borderBottomRightRadius: 50,
-        backgroundColor: "white",
-        borderTopWidth: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0)',
+        borderTopWidth: 1.4,
+    },
+    aimLabel: {
+        position: 'absolute',
+        left: '15%',
+        transform: [{translateY: 20}],
+        alignItems: 'center',
+    },
+    aimLabelText: {
+        fontSize: 12,
+        fontWeight: "600",
+        textAlign: "center",
+    },
+    expendLabel: {
+        position: 'absolute',
+        right: '15%',
+        transform: [{translateY: 12}],
+        alignItems: 'center',
+    },
+    expendLabelText: {
+        fontSize: 12,
+        fontWeight: "600",
+        textAlign: "center",
     },
     aimContainer: {
         flex:1,
