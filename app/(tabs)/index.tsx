@@ -4,8 +4,8 @@ import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
-import { StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Animated, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Home() {
@@ -17,6 +17,7 @@ export default function Home() {
     const month = date.getMonth() + 1;
     const day = date.getDate();
     const monthDayCount = new Date(year, month, 0).getDate();
+    const animatedValue = useRef(new Animated.Value(100)).current;
     
     const [currentDay, setCurrentDay] = useState(day);
     const [aimMoney, setAimMoney] = useState(0);
@@ -27,6 +28,19 @@ export default function Home() {
 
     const [aimCylinderHeight, setAimCylinderHeight] = useState(0);
     const [expendCylinderHeight, setExpendCylinderHeight] = useState(0);
+
+    const [animationNumberValue, setAnimationNumberValue] = useState(0);
+
+    const startAnimation = () => {
+        animatedValue.setValue(100);
+        setAnimationNumberValue(100);
+
+        Animated.timing(animatedValue, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: false,
+        }).start();
+    };
 
     const getAim = async () => {
         try {
@@ -107,7 +121,12 @@ export default function Home() {
     useFocusEffect(
         useCallback(() => {
             fetchData();
-        }, [fetchData])
+            startAnimation();
+
+            return () => {
+                animatedValue.stopAnimation();
+            }
+        }, [fetchData, animatedValue])
     );
 
     useEffect(() => {
@@ -124,6 +143,12 @@ export default function Home() {
 
         return () => clearInterval(interval);
     }, [currentDay]);
+
+    const cylinderAnimatedHeight = animatedValue.interpolate({
+        inputRange: [1, 100],
+        outputRange: [`${expendCylinderHeight}%`, `0%`],
+        extrapolate: "clamp",
+    })
 
     return (
         <View style={{flex: 1, paddingTop: insets.top, backgroundColor:"#F5F5F7"}}>
@@ -174,11 +199,11 @@ export default function Home() {
                 <View style={styles.cylinderContainer}>
                     <View style={styles.cylinderWrapper}>
                         <View style={styles.cylinderBackground}>
-                            <View
+                            <Animated.View
                                 style={[
                                     styles.expendCylinder,
                                     {
-                                        height: `${expendCylinderHeight}%`,
+                                        height: cylinderAnimatedHeight,
                                         backgroundColor: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"
                                     }
                                 ]}
