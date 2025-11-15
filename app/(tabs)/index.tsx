@@ -305,6 +305,7 @@ export default function Home() {
                                     storeAim(aimValue);
                                     setAimMoneyWriting('');
                                     getAim();
+                                    startAnimation();
                                     fetchData();
                                     setIsAimWriting(false)
                                 }}
