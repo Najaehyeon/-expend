@@ -227,10 +227,10 @@ export default function Home() {
                                 {Math.floor(aimMoney/monthDayCount*day).toLocaleString("kr-KR")}
                             </Text>
                         </View>
-                        <View
+                        <Animated.View
                             style={[
                                 styles.expendLabel,
-                                {bottom: `${expendCylinderHeight}%`}
+                                {bottom: cylinderAnimatedHeight}
                             ]}
                         >
                             <Text
@@ -242,7 +242,7 @@ export default function Home() {
                                 현재 지출{'\n'}
                                 {monthSpentMoney.toLocaleString("kr-KR")}
                             </Text>
-                        </View>
+                        </Animated.View>
                     </View>
                     <View style={styles.aimContainer}>
                         <View style={styles.aimTitleContainer}>
