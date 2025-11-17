@@ -7,7 +7,7 @@ export default function Detail() {
     return (
         <View style={{flex: 1, marginTop: insets.top}}>
             <StatusBar barStyle={'dark-content'} />
-            <Text>Stats</Text>
+            <Text>Detail</Text>
         </View>
     )
 }

@@ -29,11 +29,10 @@ export default function Home() {
     const [aimCylinderHeight, setAimCylinderHeight] = useState(0);
     const [expendCylinderHeight, setExpendCylinderHeight] = useState(0);
 
-    const [animationNumberValue, setAnimationNumberValue] = useState(0);
+    const [showWeekly, setShowWeekly] = useState(false);
 
     const startAnimation = () => {
         animatedValue.setValue(100);
-        setAnimationNumberValue(100);
 
         Animated.timing(animatedValue, {
             toValue: 1,
@@ -164,86 +163,136 @@ export default function Home() {
                     </TouchableOpacity>
                 </View>
                 <TouchableOpacity
-                    style={styles.weekAnalysis}
+                    style={[styles.weekAnalysis, {backgroundColor: `${showWeekly === false ? "white" : "black"}`}]}
+                    onPress={() => {
+                        showWeekly === false ? setShowWeekly(true) : setShowWeekly(false);
+                        startAnimation();                        
+                    }}
                 >
-                   <Feather name="activity" size={24} color="black" />
+                    {showWeekly === false ? <Feather name="activity" size={24} color="black" /> : <Feather name="activity" size={24} color="white" />}
                 </TouchableOpacity>
             </View>
             <View style={styles.content}>
-                <View style={styles.todayContainer}>
-                    <Text 
-                        style={[
-                            styles.todayTitle,
-                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
-                            ]}
-                    >
-                        오늘 지출
-                    </Text>
-                    <Text
-                        style={[
-                            styles.todayExpend,
-                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
-                        ]}
-                    >
-                        {todaySpentMoney.toLocaleString("kr-KR")}
-                    </Text>
-                    <Text
-                        style={[
-                            styles.todayAverageExpend,
-                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
-                        ]}
-                    >
-                            하루 {(aimMoney / monthDayCount).toLocaleString("kr-KR", {maximumFractionDigits: 0})}원 이하 권장
-                    </Text>
-                </View>
+                    {
+                        showWeekly === false
+                            ? (
+                                <View style={styles.todayContainer}>
+                                    <Text 
+                                        style={[
+                                            styles.todayTitle,
+                                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                            ]}
+                                    >
+                                        오늘 지출
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            styles.todayExpend,
+                                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                        ]}
+                                    >
+                                        {todaySpentMoney.toLocaleString("kr-KR")}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            styles.todayAverageExpend,
+                                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                        ]}
+                                    >
+                                            하루 {(aimMoney / monthDayCount).toLocaleString("kr-KR", {maximumFractionDigits: 0})}원 이하 권장
+                                    </Text>
+                                </View>
+                            )
+                            : (
+                                <View style={styles.todayContainer}>
+                                    <Text 
+                                        style={[
+                                            styles.todayTitle,
+                                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                            ]}
+                                    >
+                                        이번 주 지출
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            styles.todayExpend,
+                                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                        ]}
+                                    >
+                                        {todaySpentMoney.toLocaleString("kr-KR")}
+                                    </Text>
+                                    <Text
+                                        style={[
+                                            styles.todayAverageExpend,
+                                            {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                        ]}
+                                    >
+                                            매주 {(aimMoney / monthDayCount).toLocaleString("kr-KR", {maximumFractionDigits: 0})}0원 이하 권장
+                                    </Text>
+                                </View>
+                            )
+                    }
                 <View style={styles.cylinderContainer}>
-                    <View style={styles.cylinderWrapper}>
-                        <View style={styles.cylinderBackground}>
-                            <Animated.View
-                                style={[
-                                    styles.expendCylinder,
-                                    {
-                                        height: cylinderAnimatedHeight,
-                                        backgroundColor: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"
-                                    }
-                                ]}
-                            />
-                            <View
-                                style={[
-                                    styles.aimExpendCylinder,
-                                    {height: `${aimCylinderHeight}%`}
-                                ]}
-                            />
-                        </View>
-                        <View
-                            style={[
-                                styles.aimLabel,
-                                {bottom: `${aimCylinderHeight}%`}
-                            ]}
-                        >
-                            <Text style={styles.aimLabelText}>
-                                {month}/{day}{'\n'}
-                                적정지출{'\n'}
-                                {Math.floor(aimMoney/monthDayCount*day).toLocaleString("kr-KR")}
-                            </Text>
-                        </View>
-                        <Animated.View
-                            style={[
-                                styles.expendLabel,
-                                {bottom: cylinderAnimatedHeight}
-                            ]}
-                        >
-                            <Text
-                                style={[
-                                    styles.expendLabelText,
-                                    {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
-                                ]}
-                            >
-                                현재 지출{'\n'}
-                                {monthSpentMoney.toLocaleString("kr-KR")}
-                            </Text>
-                        </Animated.View>
-                    </View>
+                    {
+                        showWeekly === false
+                            ? (
+                                <View style={styles.cylinderWrapper}>
+                                    <View style={styles.cylinderBackground}>
+                                        <Animated.View
+                                            style={[
+                                                styles.expendCylinder,
+                                                {
+                                                    height: cylinderAnimatedHeight,
+                                                    backgroundColor: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"
+                                                }
+                                            ]}
+                                        />
+                                        <View
+                                            style={[
+                                                styles.aimExpendCylinder,
+                                                {height: `${aimCylinderHeight}%`}
+                                            ]}
+                                        />
+                                    </View>
+                                    <View
+                                        style={[
+                                            styles.aimLabel,
+                                            {bottom: `${aimCylinderHeight}%`}
+                                        ]}
+                                    >
+                                        <Text style={styles.aimLabelText}>
+                                            {month}/{day}{'\n'}
+                                            적정지출{'\n'}
+                                            {Math.floor(aimMoney/monthDayCount*day).toLocaleString("kr-KR")}
+                                        </Text>
+                                    </View>
+                                    <Animated.View
+                                        style={[
+                                            styles.expendLabel,
+                                            {bottom: cylinderAnimatedHeight}
+                                        ]}
+                                    >
+                                        <Text
+                                            style={[
+                                                styles.expendLabelText,
+                                                {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                            ]}
+                                        >
+                                            현재 지출{'\n'}
+                                            {monthSpentMoney.toLocaleString("kr-KR")}
+                                        </Text>
+                                    </Animated.View>
+                                </View>
+                            )
+                            : (
+                                <View style={styles.weekAnalysisWrapper}>
+                                    <View style={styles.weekAnalysisBackground}>
+                                        <Text>This Week</Text>
+                                    </View>
+                                </View>
+                            )
+                    }
+                    
                     <View style={styles.aimContainer}>
                         <View style={styles.aimTitleContainer}>
                             <Text style={{
@@ -424,6 +473,18 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: "600",
         textAlign: "center",
+    },
+    weekAnalysisWrapper: {
+        flex: 3,
+        width: "100%",
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    weekAnalysisBackground: {
+        width: "88%",
+        height: "88%",
+        backgroundColor: "white",
+        borderRadius: 20,
     },
     aimContainer: {
         flex:1,
