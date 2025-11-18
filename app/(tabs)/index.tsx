@@ -287,7 +287,13 @@ export default function Home() {
                             : (
                                 <View style={styles.weekAnalysisWrapper}>
                                     <View style={styles.weekAnalysisBackground}>
-                                        <Text>This Week</Text>
+                                        <View style={styles.weekAnalysisHeader}>
+                                            <Text>This week</Text>
+                                            <View style={styles.weekAnalysisSpentContainer}>
+                                                <Text style={{fontWeight: "bold"}}>301,400원</Text>
+                                                <Text style={{fontSize: 12}}>Spent</Text>
+                                            </View>
+                                        </View>
                                     </View>
                                 </View>
                             )
@@ -485,6 +491,14 @@ const styles = StyleSheet.create({
         height: "88%",
         backgroundColor: "white",
         borderRadius: 20,
+    },
+    weekAnalysisHeader: {
+        padding: 24,
+        flexDirection: "row",
+        justifyContent: "space-between",
+    },
+    weekAnalysisSpentContainer: {
+        alignItems: "flex-end",
     },
     aimContainer: {
         flex:1,
