@@ -13,8 +13,8 @@ export default function Home() {
     const navigation = useNavigation();
 
     const date = new Date();
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
+    const [year, setYear] = useState(date.getFullYear());
+    const [month, setMonth] = useState(date.getMonth() + 1);
     const day = date.getDate();
     const monthDayCount = new Date(year, month, 0).getDate();
     const animatedValue = useRef(new Animated.Value(100)).current;
@@ -40,6 +40,26 @@ export default function Home() {
             useNativeDriver: false,
         }).start();
     };
+
+    const goBackAMonth = () => {
+        if (month === 1) {
+            setYear(year - 1);
+            setMonth(12);
+        }
+        else {
+            setMonth(month - 1);
+        }
+    }
+
+    const goForwardAMonth = () => {
+        if (month === 12) {
+            setYear(year + 1);
+            setMonth(1);
+        }
+        else {
+            setMonth(month + 1);
+        }
+    }
 
     const getAim = async () => {
         try {
@@ -154,11 +174,19 @@ export default function Home() {
             <StatusBar barStyle={'dark-content'} />
             <View style={styles.header}>
                 <View style={styles.headerMonth}>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            goBackAMonth();
+                        }}
+                    >
                         <Feather name="chevron-left" size={28} color="black" />
                     </TouchableOpacity>
                     <Text style={styles.headerText}>{year} {month}월</Text>
-                    <TouchableOpacity>
+                    <TouchableOpacity
+                        onPress={() => {
+                            goForwardAMonth();
+                        }}
+                    >
                         <Feather name="chevron-right" size={28} color="black" />
                     </TouchableOpacity>
                 </View>
@@ -243,7 +271,7 @@ export default function Home() {
                                                 styles.expendCylinder,
                                                 {
                                                     height: cylinderAnimatedHeight,
-                                                    backgroundColor: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"
+                                                    backgroundColor: monthSpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"
                                                 }
                                             ]}
                                         />
@@ -275,7 +303,7 @@ export default function Home() {
                                         <Text
                                             style={[
                                                 styles.expendLabelText,
-                                                {color: todaySpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
+                                                {color: monthSpentMoney > (aimMoney/monthDayCount*day) ? "#bb0000" : "#0000bb"}
                                             ]}
                                         >
                                             현재 지출{'\n'}
@@ -460,7 +488,7 @@ const styles = StyleSheet.create({
     },
     aimLabel: {
         position: 'absolute',
-        left: '15%',
+        left: '14%',
         transform: [{translateY: 20}],
         alignItems: 'center',
     },
@@ -471,7 +499,7 @@ const styles = StyleSheet.create({
     },
     expendLabel: {
         position: 'absolute',
-        right: '15%',
+        right: '14%',
         transform: [{translateY: 12}],
         alignItems: 'center',
     },
